@@ -131,6 +131,20 @@ bitflags! {
     }
 }
 
+/// They kernel type for representing support for optional features.
+///
+/// TODO: explain more
+pub type KeyctlSupportFlags = u32;
+
+bitflags! {
+    flags KeyctlSupportFlag: KeyctlSupportFlags {
+        const SUPPORTS_ENCRYPT  = 0x01,
+        const SUPPORTS_DECRYPT  = 0x02,
+        const SUPPORTS_SIGN     = 0x04,
+        const SUPPORTS_VERIFY   = 0x08,
+    }
+}
+
 #[test]
 fn test_keyring_ids() {
     assert_eq!(SpecialKeyring::ThreadKeyring.serial(), KEY_SPEC_THREAD_KEYRING);
@@ -186,4 +200,12 @@ fn test_permission_bits() {
     assert_eq!(OTHER_LINK.bits, KEY_OTH_LINK);
     assert_eq!(OTHER_SET_ATTRIBUTE.bits, KEY_OTH_SETATTR);
     assert_eq!(OTHER_ALL.bits, KEY_OTH_ALL);
+}
+
+#[test]
+fn test_support_flags() {
+    assert_eq!(SUPPORTS_ENCRYPT.bits, KEYCTL_SUPPORTS_ENCRYPT);
+    assert_eq!(SUPPORTS_DECRYPT.bits, KEYCTL_SUPPORTS_DECRYPT);
+    assert_eq!(SUPPORTS_SIGN.bits, KEYCTL_SUPPORTS_SIGN);
+    assert_eq!(SUPPORTS_VERIFY.bits, KEYCTL_SUPPORTS_VERIFY);
 }

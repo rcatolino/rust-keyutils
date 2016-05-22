@@ -55,6 +55,41 @@ pub const KEY_OTH_LINK:    key_perm_t = 0x00000010;
 pub const KEY_OTH_SETATTR: key_perm_t = 0x00000020;
 pub const KEY_OTH_ALL:     key_perm_t = 0x0000003f;
 
+// No actual type in the API, but create one for simplicity.
+#[allow(non_camel_case_types)]
+pub type _keyctl_support_t = libc::uint32_t;
+
+pub const KEYCTL_SUPPORTS_ENCRYPT: _keyctl_support_t = 0x01;
+pub const KEYCTL_SUPPORTS_DECRYPT: _keyctl_support_t = 0x02;
+pub const KEYCTL_SUPPORTS_SIGN:    _keyctl_support_t = 0x04;
+pub const KEYCTL_SUPPORTS_VERIFY:  _keyctl_support_t = 0x08;
+
+#[repr(C)]
+#[allow(non_camel_case_types)]
+pub struct keyctl_pkey_query {
+    pub supported_ops:  libc::uint32_t,
+    pub key_size:       libc::uint32_t,
+    pub max_data_size:  libc::uint16_t,
+    pub max_sig_size:   libc::uint16_t,
+    pub max_enc_size:   libc::uint16_t,
+    pub max_dec_size:   libc::uint16_t,
+    __spare:            [libc::uint32_t; 10],
+}
+
+impl keyctl_pkey_query {
+    pub fn new() -> Self {
+        keyctl_pkey_query {
+            supported_ops: 0,
+            key_size: 0,
+            max_data_size: 0,
+            max_sig_size: 0,
+            max_enc_size: 0,
+            max_dec_size: 0,
+            __spare: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        }
+    }
+}
+
 #[link(name = "keyutils")]
 extern {
     pub fn add_key(
@@ -169,5 +204,46 @@ extern {
         base:       key_serial_t,
         buffer:     *mut libc::c_char,
         buflen:     libc::size_t)
+        -> libc::c_long;
+    pub fn keyctl_pkey_query(
+        key:        key_serial_t,
+        password:   key_serial_t,
+        info:       *mut keyctl_pkey_query)
+        -> libc::c_long;
+    pub fn keyctl_pkey_encrypt(
+        key:        key_serial_t,
+        password:   key_serial_t,
+        info:       *const libc::c_char,
+        data:       *const libc::c_void,
+        data_len:   libc::size_t,
+        enc:        *mut libc::c_void,
+        enc_len:    libc::size_t)
+        -> libc::c_long;
+    pub fn keyctl_pkey_decrypt(
+        key:        key_serial_t,
+        password:   key_serial_t,
+        info:       *const libc::c_char,
+        enc:        *const libc::c_void,
+        enc_len:    libc::size_t,
+        data:       *mut libc::c_void,
+        data_len:   libc::size_t)
+        -> libc::c_long;
+    pub fn keyctl_pkey_sign(
+        key:        key_serial_t,
+        password:   key_serial_t,
+        info:       *const libc::c_char,
+        data:       *const libc::c_void,
+        data_len:   libc::size_t,
+        sig:        *mut libc::c_void,
+        sig_len:    libc::size_t)
+        -> libc::c_long;
+    pub fn keyctl_pkey_verify(
+        key:        key_serial_t,
+        password:   key_serial_t,
+        info:       *const libc::c_char,
+        data:       *const libc::c_void,
+        data_len:   libc::size_t,
+        sig:        *const libc::c_void,
+        sig_len:    libc::size_t)
         -> libc::c_long;
 }
